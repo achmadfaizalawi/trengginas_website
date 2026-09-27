@@ -1,0 +1,94 @@
+{
+  "name": "TRENGGINAS WQMS",
+  "short_name": "TRENGGINAS",
+  "description": "Water Quality Monitoring System - PT ARTUR",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1e3a8a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/assets/ARTUR 2.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/ARTUR 2.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/assets/screenshot-mobile.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/assets/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "categories": [
+    "business",
+    "utilities",
+    "productivity"
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View monitoring dashboard",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/assets/ARTUR 2.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Data Monitoring",
+      "short_name": "Monitor",
+      "description": "Real-time monitoring",
+      "url": "/",
+      "icons": [
+        {
+          "src": "/assets/ARTUR 2.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Laporan",
+      "short_name": "Laporan",
+      "description": "View reports",
+      "url": "/laporan",
+      "icons": [
+        {
+          "src": "/assets/ARTUR 2.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Statistik",
+      "short_name": "Statistik",
+      "description": "View statistics",
+      "url": "/statistik",
+      "icons": [
+        {
+          "src": "/assets/ARTUR 2.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false
+}

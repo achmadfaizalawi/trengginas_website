@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRENGGINAS</title>
+    <link rel="icon" type="image/png" href="/assets/ARTUR 2.png">
+
+    <!-- ⚡ INSTANT LOADING: Resource Hints -->
+    <!-- DNS Prefetch untuk CDN -->
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="dns-prefetch" href="https://unpkg.com">
+    
+    <!-- Preconnect untuk faster requests -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
+    
+    <!-- Preconnect ke API server -->
+    <link rel="preconnect" href="https://trengginas.tech">
+    
+    <!-- Prefetch halaman lain untuk instant navigation -->
+    <link rel="prefetch" href="/index.html" as="document">
+    <link rel="prefetch" href="/laporan.html" as="document">
+    <link rel="prefetch" href="/statistik.html" as="document">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <link rel="stylesheet" href="/css/dashboard.css">
+    
+    <!-- ⚡ Splash Screen Styles -->
+    <link rel="stylesheet" href="/css/splash-screen.css">
+</head>
+
+<body>
+    <!-- ⚡ SPLASH SCREEN -->
+    <div id="splash-screen" class="hide">
+        <img src="/assets/ARTUR 2.png" alt="TRENGGINAS Logo" class="splash-logo">
+        <div class="splash-text">TRENGGINAS</div>
+        <div class="splash-subtitle">Water Quality Monitoring System</div>
+        <div class="splash-loader"></div>
+        <div class="splash-message" id="splash-message"></div>
+    </div>
+
+    <!-- Apply sidebar state immediately to prevent flicker -->
+    <script>
+        (function () {
+            const sidebarState = localStorage.getItem('sidebar_collapsed');
+            if (sidebarState === 'true' || sidebarState === null) {
+                document.body.classList.add('sb-collapsed');
+            }
+        })();
+    </script>
+
+    <div class="loading-overlay" id="loading">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div style="color: var(--primary-color); font-weight: 600;">Memuat data stasiun...</div>
+        </div>
+    </div>
+
+    <div id="dashboard-section">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-logo-bg"><img src="/assets/ARTUR 2.png" alt="Logo"></div>
+                <span class="brand-text">TRENGGINAS</span>
+            </div>
+            <nav class="mt-4 flex-grow-1">
+                <a class="nav-link-custom active" id="nav-dashboard" href="#"
+                    onclick="closeMobileSidebar(); return false;">
+                    <i class="fas fa-map-marked-alt nav-icon"></i> <span class="nav-link-text">Peta Monitoring</span>
+                </a>
+                <a class="nav-link-custom" id="nav-overview" href="#"
+                    onclick="goToOverview(); closeMobileSidebar(); return false;">
+                    <i class="fas fa-th-large nav-icon"></i> <span class="nav-link-text">Daftar Stasiun</span>
+                </a>
+                <a class="nav-link-custom" id="nav-laporan" href="laporan.html">
+                    <i class="fas fa-file-download nav-icon"></i> <span class="nav-link-text">Laporan Data</span>
+                </a>
+                <a class="nav-link-custom" id="nav-statistik" href="statistik.html">
+                    <i class="fas fa-chart-line nav-icon"></i> <span class="nav-link-text">Statistik</span>
+                </a>
+                <div id="superuser-menu" class="hidden">
+                    <div style="border-top:1px solid rgba(255,255,255,0.1); margin: 10px 0;"></div>
+                    <div class="small text-uppercase fw-bold px-4 py-2 text-white-50 brand-text"
+                        style="font-size: 0.7rem;">Admin Area</div>
+                    <a class="nav-link-custom" id="nav-add-station" href="#"
+                        onclick="openStationModal(); closeMobileSidebar(); return false;">
+                        <i class="fas fa-plus-circle nav-icon"></i> <span class="nav-link-text">Generate Stasiun</span>
+                    </a>
+                    <a class="nav-link-custom" id="nav-users" href="#"
+                        onclick="goToUserManagement(); closeMobileSidebar(); return false;">
+                        <i class="fas fa-users-cog nav-icon"></i> <span class="nav-link-text">Manajemen User</span>
+                    </a>
+                    <a class="nav-link-custom" id="nav-serials" href="serial_numbers.html">
+                        <i class="fas fa-barcode nav-icon"></i> <span class="nav-link-text">Serial Number</span>
+                    </a>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="sidebar-toggler" onclick="toggleDesktopSidebar()">
+                    <i class="fas fa-chevron-left" id="toggleIcon"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- TOP BAR -->
+            <div class="top-bar">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-bars me-3" id="mobile-toggle" onclick="toggleMobileSidebar()"></i>
+                    <div>
+                        <h5 class="m-0 fw-bold text-dark" id="page-title">Peta Monitoring</h5>
+                        <small class="text-muted" id="current-date">-</small>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <div class="d-flex align-items-center gap-3 user-dropdown-toggle" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        <div class="text-end d-none d-sm-block">
+                            <div class="fw-bold text-dark small" id="user-name-display">Guest</div>
+                            <div class="text-muted" style="font-size: 0.7rem;" id="user-role-display">Role</div>
+                        </div>
+                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white shadow-sm"
+                            style="width: 40px; height: 40px;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </div>
+                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-3 mt-2">
+                        <li>
+                            <h6 class="dropdown-header">Akun Saya</h6>
+                        </li>
+                        <li><a class="dropdown-item" href="#" onclick="openProfileModal()"><i
+                                    class="fas fa-user-edit me-2 text-primary"></i> Edit Profil</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item text-danger fw-bold" href="#" onclick="logout()"><i
+                                    class="fas fa-sign-out-alt me-2"></i> Keluar</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- MAP SECTION -->
+            <div class="flex-grow-1">
+                <div class="map-wrapper">
+                    <!-- STATISTICS BAR -->
+                    <div class="stats-bar">
+                        <div class="stat-item" onclick="openAllStationsModal()" style="cursor: pointer;"
+                            title="Klik untuk melihat daftar">
+                            <div class="label">Total Stasiun</div>
+                            <div class="value" id="totalStations">0</div>
+                        </div>
+                        <div class="stat-item" onclick="openAllStationsModal('online')" style="cursor: pointer;"
+                            title="Klik untuk melihat stasiun online">
+                            <div class="label">Stasiun Online</div>
+                            <div class="value" id="activeStations" style="color: #10b981;">0</div>
+                        </div>
+                        <div class="stat-item" onclick="openAllStationsModal('offline')" style="cursor: pointer;"
+                            title="Klik untuk melihat stasiun offline">
+                            <div class="label">Stasiun Offline</div>
+                            <div class="value" id="inactiveStations" style="color: #ef4444;">0</div>
+                        </div>
+                    </div>
+
+
+                    <!-- LEAFLET MAP with Refresh Button -->
+                    <div style="position: relative;">
+                        <div id="map"></div>
+                        <button class="map-refresh-btn" onclick="resetMapView()" title="Reset tampilan peta">
+                            <i class="fas fa-redo-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <footer class="mt-5 mb-3 text-center">
+                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem; letter-spacing: 1px;">&copy;
+                    2026 PT Abinaya Trengginas Manufaktur</small>
+            </footer>
+        </div>
+    </div>
+
+    <!-- STATION MODAL -->
+    <div class="modal fade" id="stationModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content rounded-4 border-0">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Generate Stasiun Baru</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="stationForm">
+                        <div class="alert alert-light border small text-muted">
+                            <i class="fas fa-info-circle text-primary me-1"></i>
+                            Nama & Lokasi akan otomatis terisi saat alat mengirim data pertama kali.
+                        </div>
+                        <p class="small fw-bold text-muted mb-2">Pilih Parameter yang Ditampilkan:</p>
+                        <div class="row g-2" id="param-checkboxes">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary w-100" onclick="saveStation()">Generate ID &
+                        Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROFILE MODAL -->
+    <div class="modal fade" id="profileModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content rounded-4 border-0">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Edit Profil Saya</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="profileForm">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Nama Lengkap</label>
+                            <input type="text" class="form-control" id="profile-fullname" maxlength="30"
+                                placeholder="Maks. 30 Karakter" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Password Baru</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="profile-password"
+                                    placeholder="Kosongkan jika tidak ingin ganti">
+                                <span class="input-group-text bg-white"
+                                    onclick="togglePassword('profile-password', this.querySelector('i'))"
+                                    style="cursor: pointer;">
+                                    <i class="fas fa-eye text-muted"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Konfirmasi Password Baru</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="profile-password-confirm"
+                                    placeholder="">
+                                <span class="input-group-text bg-white"
+                                    onclick="togglePassword('profile-password-confirm', this.querySelector('i'))"
+                                    style="cursor: pointer;">
+                                    <i class="fas fa-eye text-muted"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" onclick="saveProfile()">Simpan Perubahan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DAFTAR SEMUA STASIUN MODAL -->
+    <div class="modal fade" id="allStationsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content rounded-4 border-0">
+                <div class="modal-header border-0 pb-2">
+                    <h5 class="modal-title fw-bold">Daftar Semua Stasiun</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body pt-2">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 50px;">No</th>
+                                    <th>Nama Stasiun</th>
+                                    <th style="width: 180px;">Terakhir Update</th>
+                                    <th style="width: 100px;">Status</th>
+                                    <th style="width: 120px;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allStationsTableBody">
+                                <tr>
+                                    <td colspan="5" class="text-center py-3">
+                                        <div class="spinner-border spinner-border-sm text-primary"></div>
+                                        <div class="mt-2 small text-muted">Memuat data stasiun...</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script src="/js/dashboard.js"></script>
+
+    <!-- ⚡ Splash Screen Script -->
+    <script src="/js/splash-screen.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRENGGINAS</title>
+    <link rel="icon" type="image/png" href="/assets/ARTUR 2.png">
+
+    <!-- ⚡ INSTANT LOADING: Resource Hints -->
+    <!-- DNS Prefetch untuk CDN -->
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    
+    <!-- Preconnect untuk faster requests -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Preconnect ke API server -->
+    <link rel="preconnect" href="https://trengginas.tech">
+    
+    <!-- Prefetch halaman lain untuk instant navigation -->
+    <link rel="prefetch" href="/dashboard.html" as="document">
+    <link rel="prefetch" href="/laporan.html" as="document">
+    <link rel="prefetch" href="/statistik.html" as="document">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <link rel="stylesheet" href="/css/index.css">
+</head>
+
+<body>
+    <!-- ⚡ SPLASH SCREEN -->
+    <div id="splash-screen" class="hide">
+        <img src="/assets/ARTUR 2.png" alt="TRENGGINAS Logo" class="splash-logo">
+        <div class="splash-text">TRENGGINAS</div>
+        <div class="splash-subtitle">Water Quality Monitoring System</div>
+        <div class="splash-loader"></div>
+        <div class="splash-message" id="splash-message"></div>
+    </div>
+
+    <!-- Apply sidebar state immediately to prevent flicker -->
+    <script>
+        (function () {
+            const sidebarState = localStorage.getItem('sidebar_collapsed');
+            if (sidebarState === 'true' || sidebarState === null) {
+                document.body.classList.add('sb-collapsed');
+            }
+        })();
+    </script>
+
+    <div id="login-section">
+        <div class="login-card">
+            <div class="text-center mb-4">
+                <div class="logo-login-bg"><img src="/assets/ARTUR 2.png" alt="Logo Trengginas"></div>
+                <h4 class="fw-bold" style="color: var(--primary-color);">TRENGGINAS</h4>
+                <p class="text-muted small">Monitoring Kualitas Air Terpusat</p>
+            </div>
+            <form id="loginForm">
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="username" placeholder="name@example.com" required>
+                    <label for="username">Username / Email</label>
+                </div>
+                <div class="form-floating mb-4 position-relative">
+                    <input type="password" class="form-control" id="password" placeholder="Password" required
+                        style="padding-right: 40px;">
+                    <label for="password">Password</label>
+                    <span
+                        class="position-absolute top-50 end-0 translate-middle-y me-3 d-flex align-items-center justify-content-center"
+                        onclick="togglePassword('password', this.querySelector('i'))"
+                        style="cursor: pointer; z-index: 10; width: 30px; height: 30px;">
+                        <i class="fas fa-eye text-muted"></i>
+                    </span>
+                </div>
+                <button type="submit" class="btn w-100 text-white fw-bold py-3 rounded-3 shadow-sm"
+                    style="background-color: var(--primary-color);">MASUK DASHBOARD</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="dashboard-section" class="hidden">
+        <div class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-logo-bg"><img src="/assets/ARTUR 2.png" alt="Logo"></div>
+                <span class="brand-text">TRENGGINAS</span>
+            </div>
+            <nav class="mt-4 flex-grow-1">
+                <a class="nav-link-custom" id="nav-dashboard" href="dashboard.html">
+                    <i class="fas fa-map-marked-alt nav-icon"></i> <span class="nav-link-text">Peta Monitoring</span>
+                </a>
+                <a class="nav-link-custom active" id="nav-overview" onclick="showStationList()">
+                    <i class="fas fa-th-large nav-icon"></i> <span class="nav-link-text">Daftar Stasiun</span>
+                </a>
+                <a class="nav-link-custom" id="nav-laporan" href="laporan.html">
+                    <i class="fas fa-file-download nav-icon"></i> <span class="nav-link-text">Laporan Data</span>
+                </a>
+                <a class="nav-link-custom" id="nav-statistik" href="statistik.html">
+                    <i class="fas fa-chart-line nav-icon"></i> <span class="nav-link-text">Statistik</span>
+                </a>
+                <div id="superuser-menu" class="hidden">
+                    <div style="border-top:1px solid rgba(255,255,255,0.1); margin: 10px 0;"></div>
+                    <div class="small text-uppercase fw-bold px-4 py-2 text-white-50 brand-text"
+                        style="font-size: 0.7rem;">Admin Area</div>
+                    <a class="nav-link-custom" id="nav-add-station" onclick="openStationModal()">
+                        <i class="fas fa-plus-circle nav-icon"></i> <span class="nav-link-text">Generate Stasiun</span>
+                    </a>
+                    <a class="nav-link-custom" id="nav-users" onclick="showUserManagement()">
+                        <i class="fas fa-users-cog nav-icon"></i> <span class="nav-link-text">Manajemen User</span>
+                    </a>
+                    <a class="nav-link-custom" id="nav-serials" href="serial_numbers.html">
+                        <i class="fas fa-barcode nav-icon"></i> <span class="nav-link-text">Serial Number</span>
+                    </a>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="sidebar-toggler" onclick="toggleDesktopSidebar()">
+                    <i class="fas fa-chevron-left" id="toggleIcon"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="top-bar">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-bars me-3" id="mobile-toggle" onclick="toggleMobileSidebar()"></i>
+                    <div>
+                        <h5 class="m-0 fw-bold text-dark" id="page-title">Daftar Stasiun</h5>
+                        <small class="text-muted" id="current-date">-</small>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <div class="d-flex align-items-center gap-3 user-dropdown-toggle" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        <div class="text-end d-none d-sm-block">
+                            <div class="fw-bold text-dark small" id="user-name-display">Guest</div>
+                            <div class="text-muted" style="font-size: 0.7rem;" id="user-role-display">Role</div>
+                        </div>
+                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white shadow-sm"
+                            style="width: 40px; height: 40px;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </div>
+                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-3 mt-2">
+                        <li>
+                            <h6 class="dropdown-header">Akun Saya</h6>
+                        </li>
+                        <li><a class="dropdown-item" href="#" onclick="openProfileModal()"><i
+                                    class="fas fa-user-edit me-2 text-primary"></i> Edit Profil</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item text-danger fw-bold" href="#" onclick="logout()"><i
+                                    class="fas fa-sign-out-alt me-2"></i> Keluar</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="flex-grow-1">
+                <div id="view-stations">
+                    <div class="row g-4" id="station-grid">
+                    </div>
+                </div>
+
+                <div id="view-detail" class="hidden">
+                    <div class="d-flex justify-content-between align-items-start mb-4 detail-header-wrapper">
+                        <button class="btn btn-outline-secondary btn-sm px-3" onclick="showStationList()"><i
+                                class="fas fa-arrow-left me-2"></i> Kembali</button>
+                        <div class="detail-header-right text-end">
+                            <span class="status-badge status-online" id="connection-badge">TERHUBUNG</span>
+                            <div class="text-muted small mt-1">
+                                Update: <span id="last-update">-</span>
+                            </div>
+                            <div class="mt-2">
+                                <button class="btn btn-outline-primary btn-sm px-3 hidden"
+                                    onclick="openEditParamModal()" id="btn-edit-param">
+                                    <i class="fas fa-cog me-2"></i> Konfigurasi
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center hidden" role="alert"
+                        id="trengginas-id-alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <div class="small">
+                            Trengginas ID: <strong id="detail-trengginas-id" class="user-select-all">TRG-XXXX</strong>
+                        </div>
+                    </div>
+
+                    <div class="param-grid-container mb-4" id="dynamic-param-container">
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <div class="card border-0 shadow-sm rounded-4 h-100">
+                                <div class="card-header bg-white border-0 py-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="m-0 fw-bold text-primary">
+                                            <i class="fas fa-chart-line me-2"></i>Grafik Parameter
+                                        </h6>
+                                        <button class="btn btn-sm btn-outline-primary"
+                                            onclick="resetChartParameterFilter()" title="Tampilkan semua parameter">
+                                            <i class="fas fa-eye me-1"></i>Reset
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart-wrapper"><canvas id="mainChart"></canvas></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="card border-0 shadow-sm rounded-4">
+                                <div class="card-header bg-white border-0 py-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="m-0 fw-bold text-primary"><i class="fas fa-table me-2"></i>History
+                                            Data</h6>
+                                        <button class="btn btn-sm btn-outline-success" onclick="fetchTableData()">
+                                            <i class="fas fa-sync-alt"></i>
+                                        </button>
+                                    </div>
+
+                                    <div class="row g-2 align-items-center bg-light p-2 rounded-3" id="filter-toolbar">
+                                        <div class="col-12 col-md-3" id="avg-type-container">
+                                            <label class="small text-muted fw-bold mb-1">Tipe Data:</label>
+                                            <select class="form-select form-select-sm" id="avgTypeSelect"
+                                                onchange="handleAvgTypeChange()">
+                                                <option value="2min">2 Menit</option>
+                                                <option value="hourly">Per Jam</option>
+                                                <option value="daily">Harian</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-6 col-md-3">
+                                            <label class="small text-muted fw-bold mb-1">Dari Tanggal:</label>
+                                            <input type="date" class="form-control form-control-sm"
+                                                id="filterStartDate">
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <label class="small text-muted fw-bold mb-1">Sampai Tanggal:</label>
+                                            <input type="date" class="form-control form-control-sm" id="filterEndDate">
+                                        </div>
+
+                                        <div class="col-12 col-md-3 d-flex align-items-end gap-2">
+                                            <button
+                                                class="btn btn-outline-secondary btn-sm mt-md-4 mt-2 flex-grow-1 hidden text-nowrap"
+                                                id="btn-reset-filter" onclick="resetFilter()">
+                                                <i class="fas fa-undo me-1"></i> Reset
+                                            </button>
+                                            <button class="btn btn-primary btn-sm mt-md-4 mt-2 flex-grow-1 text-nowrap"
+                                                id="btn-apply-filter" onclick="applyFilter()">
+                                                <i class="fas fa-filter me-1"></i> Terapkan
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card-body p-0">
+                                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                                        <table class="table table-hover table-striped mb-0 align-middle">
+                                            <thead class="table-light sticky-top" id="dynamic-table-head">
+                                            </thead>
+                                            <tbody id="full-table-body">
+                                                <tr>
+                                                    <td class="text-center py-3">Memuat data...</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-users" class="hidden">
+                    <div class="d-flex justify-content-end align-items-center mb-4">
+                        <button class="btn btn-primary text-nowrap" onclick="openUserModal('add')"><i
+                                class="fas fa-plus me-2"></i> Tambah User</button>
+                    </div>
+                    <div class="card border-0 shadow-sm rounded-4" style="overflow: hidden;">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-custom-header">
+                                        <tr>
+                                            <th class="ps-4">No</th>
+                                            <th>Nama Lengkap</th>
+                                            <th>Username / Email</th>
+                                            <th>Role</th>
+                                            <th>Akses Stasiun</th>
+                                            <th class="text-end pe-4">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="user-table-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <footer class="mt-5 mb-3 text-center">
+                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem; letter-spacing: 1px;">&copy;
+                    2026 PT Abinaya Trengginas Manufaktur</small>
+            </footer>
+        </div>
+    </div>
+
+    <div class="modal fade" id="profileModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content rounded-4 border-0">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Edit Profil Saya</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="profileForm">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Nama Lengkap</label>
+                            <input type="text" class="form-control" id="profile-fullname" maxlength="30"
+                                placeholder="Maks. 30 Karakter" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Password Baru</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="profile-password"
+                                    placeholder="Kosongkan jika tidak ingin ganti">
+                                <span class="input-group-text bg-white"
+                                    onclick="togglePassword('profile-password', this.querySelector('i'))"
+                                    style="cursor: pointer;">
+                                    <i class="fas fa-eye text-muted"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Konfirmasi Password Baru</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="profile-password-confirm"
+                                    placeholder="">
+                                <span class="input-group-text bg-white"
+                                    onclick="togglePassword('profile-password-confirm', this.querySelector('i'))"
+                                    style="cursor: pointer;">
+                                    <i class="fas fa-eye text-muted"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" onclick="saveProfile()">Simpan Perubahan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="userModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content rounded-4 border-0">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="userModalTitle">Tambah User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="userForm">
+                        <input type="hidden" id="edit-user-id">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Nama Lengkap User</label>
+                            <input type="text" class="form-control" id="form-fullname" maxlength="30"
+                                placeholder="Cth: Budi Santoso" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Username</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="form-username" placeholder="Cth: budi"
+                                    required>
+                                <span class="input-group-text bg-light text-muted"
+                                    style="font-size: 0.85rem;">@trengginas.tech</span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Password</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="form-password"
+                                    placeholder="Kosongkan jika edit">
+                                <span class="input-group-text bg-white"
+                                    onclick="togglePassword('form-password', this.querySelector('i'))"
+                                    style="cursor: pointer;">
+                                    <i class="fas fa-eye text-muted"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Role</label>
+                            <select class="form-select" id="form-role" onchange="toggleStationSelect()">
+                                <option value="superuser">Super User</option>
+                                <option value="admin">Admin</option>
+                                <option value="operator">Operator</option>
+                            </select>
+                        </div>
+                        <div class="mb-3 hidden" id="div-assigned-station">
+                            <label class="form-label small fw-bold text-muted">Pilih Akses Stasiun</label>
+                            <div class="card p-2 border"
+                                style="max-height: 150px; overflow-y: auto; background-color: #fcfcfc;">
+                                <div id="station-checkbox-container"></div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" onclick="saveUser()">Simpan Data</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="stationModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content rounded-4 border-0">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Generate Stasiun Baru</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="stationForm">
+                        <div class="alert alert-light border small text-muted">
+                            <i class="fas fa-info-circle text-primary me-1"></i>
+                            Nama & Lokasi akan otomatis terisi saat alat mengirim data pertama kali.
+                        </div>
+                        <p class="small fw-bold text-muted mb-2">Pilih Parameter yang Ditampilkan:</p>
+                        <div class="row g-2" id="param-checkboxes">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary w-100" onclick="saveStation()">Generate ID &
+                        Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editParamModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+
+                <div class="modal-header custom-header text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-sliders-h me-2"></i>Konfigurasi
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <ul class="nav nav-tabs mb-4" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-parameters">
+                                <i class="fas fa-check-square me-1"></i>Parameter
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button id="threshold-tab-btn" class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-thresholds">
+                                <i class="fas fa-thermometer-half me-1"></i>Ambang Batas
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+
+                        <div class="tab-pane fade show active" id="tab-parameters">
+                            <p class="text-muted mb-3">
+                                <i class="fas fa-lightbulb me-1"></i>
+                                Pilih parameter yang ingin ditampilkan di dashboard
+                            </p>
+
+                            <div class="row g-3" id="edit-param-checkboxes"></div>
+                        </div>
+
+                        <div class="tab-pane fade" id="tab-thresholds">
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Petunjuk:</strong>
+                                <ul class="mb-0 mt-2">
+                                    <li><strong>🟢 Hijau (Aman):</strong> Nilai dalam rentang min_safe - max_safe
+                                    </li>
+                                    <li><strong>🟡 Kuning (Warning):</strong> Nilai dalam rentang warning (di luar
+                                        safe)
+                                    </li>
+                                    <li><strong>🔴 Merah (Bahaya):</strong> Nilai di luar semua rentang</li>
+                                    <li><strong>🔵 Biru (Default):</strong> Tidak ada ambang batas diset</li>
+                                </ul>
+                            </div>
+
+                            <div id="threshold-forms-container"></div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Batal
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="saveEditedParamsWithThresholds()">
+                        <i class="fas fa-save me-1"></i>Simpan Perubahan
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="/js/index.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,120 @@
+# ========================================
+# TRENGGINAS - Apache Clean URLs Config
+# ========================================
+# Place this file as .htaccess in your web root directory
+# Example: /var/www/html/.htaccess
+
+# Enable Rewrite Engine
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # ========================================
+    # FORCE HTTPS (Recommended for security)
+    # ========================================
+    # Uncomment these lines if you want to force HTTPS
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+    # ========================================
+    # REMOVE .html EXTENSION FROM URLs
+    # ========================================
+    
+    # If file exists with .html, redirect to clean URL
+    # Example: /index.html → /index
+    RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\s([^.]+)\.html [NC]
+    RewriteRule ^ %1 [R=301,L]
+    
+    # Internally add .html extension
+    # Example: /index → /index.html (internal)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME}.html -f
+    RewriteRule ^([^\.]+)$ $1.html [NC,L]
+
+    # ========================================
+    # SPECIFIC ROUTE ALIASES (Optional)
+    # ========================================
+    # Uncomment these if you want custom URLs
+    
+    # Home/Overview
+    # RewriteRule ^overview$ index.html [NC,L]
+    # RewriteRule ^home$ index.html [NC,L]
+    
+    # Dashboard
+    # RewriteRule ^map$ dashboard.html [NC,L]
+    # RewriteRule ^monitoring$ dashboard.html [NC,L]
+    
+    # Reports
+    # RewriteRule ^reports$ laporan.html [NC,L]
+    
+    # Statistics
+    # RewriteRule ^stats$ statistik.html [NC,L]
+    
+    # Serial Numbers
+    # RewriteRule ^serial$ serial_numbers.html [NC,L]
+
+    # ========================================
+    # PREVENT DIRECTORY BROWSING
+    # ========================================
+    Options -Indexes
+
+    # ========================================
+    # CUSTOM ERROR PAGES (Optional)
+    # ========================================
+    # ErrorDocument 404 /404.html
+    # ErrorDocument 500 /500.html
+</IfModule>
+
+# ========================================
+# SECURITY HEADERS (Recommended)
+# ========================================
+<IfModule mod_headers.c>
+    # Prevent clickjacking
+    Header always set X-Frame-Options "SAMEORIGIN"
+    
+    # XSS Protection
+    Header always set X-XSS-Protection "1; mode=block"
+    
+    # Prevent MIME type sniffing
+    Header always set X-Content-Type-Options "nosniff"
+    
+    # Referrer Policy
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# ========================================
+# CACHE CONTROL (Optional - for performance)
+# ========================================
+<IfModule mod_expires.c>
+    ExpiresActive On
+    
+    # HTML files - no cache (always fresh)
+    ExpiresByType text/html "access plus 0 seconds"
+    
+    # CSS & JavaScript - 1 week
+    ExpiresByType text/css "access plus 1 week"
+    ExpiresByType application/javascript "access plus 1 week"
+    
+    # Images - 1 month
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    ExpiresByType image/webp "access plus 1 month"
+    
+    # Fonts - 1 year
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
+
+# ========================================
+# GZIP COMPRESSION (Optional - for performance)
+# ========================================
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE text/javascript
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/json
+</IfModule>
